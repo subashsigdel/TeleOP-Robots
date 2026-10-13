@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rover Teleop</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app" id="app" data-view="dashboard">
+
+  <!-- ───────────── Sidebar ───────────── -->
+  <aside class="sidebar">
+    <div class="brand">
+      <img class="brand-logo" src="assets/logo.svg" alt="A Square Farm">
+      <div>
+        <div class="brand-name">ROVER</div>
+        <div class="brand-sub">A Square Farm</div>
+      </div>
+    </div>
+
+    <nav class="nav" aria-label="Views">
+      <button class="nav-item active" data-view="dashboard" title="Dashboard">
+        <svg class="i" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Dashboard</span>
+      </button>
+      <button class="nav-item" data-view="vision" title="Vision">
+        <svg class="i" viewBox="0 0 24 24"><path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg><span>Vision</span>
+      </button>
+      <button class="nav-item" data-view="lidar" title="Lidar">
+        <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M8 8a5.6 5.6 0 0 0 0 8M16 8a5.6 5.6 0 0 1 0 8M5 5a9.9 9.9 0 0 0 0 14M19 5a9.9 9.9 0 0 1 0 14"/></svg><span>Lidar</span>
+      </button>
+      <button class="nav-item" data-view="controls" title="Controls">
+        <svg class="i" viewBox="0 0 24 24"><path d="M7 7h10a5 5 0 0 1 4.9 6l-.8 4a2.6 2.6 0 0 1-4.6 1.1L15 16H9l-1.5 2.1A2.6 2.6 0 0 1 2.9 17l-.8-4A5 5 0 0 1 7 7z"/><path d="M8 10v4M6 12h4M15 11h.01M17 13h.01"/></svg><span>Controls</span>
+      </button>
+      <button class="nav-item" data-view="status" title="Status">
+        <svg class="i" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-6 3 4 5-7"/></svg><span>Status</span>
+      </button>
+      <button class="nav-item" data-view="logs" title="Logs">
+        <svg class="i" viewBox="0 0 24 24"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6M9 9h2"/></svg><span>Logs</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="row">
+        <span class="dot" id="sbDot" style="margin-top:5px"></span>
+        <div><div id="sbState">Disconnected</div><div class="muted small" id="sbTransport">WebRTC · —</div></div>
+      </div>
+      <hr>
+      <div class="row">
+        <svg class="i" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>
+        <div><div id="sbRobot">ROVER-01</div><div class="muted small" id="sbModel">Unitree · model TBD</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ───────────── Main ───────────── -->
+  <div class="main">
+    <header class="topbar">
+      <span class="dot" id="tbDot"></span>
+      <span class="robot-name" id="tbName">ROVER-01</span>
+      <span class="pill off" id="tbPill">Offline</span>
+      <span class="vsep tb-hide-sm"></span>
+      <span class="tb-group tb-hide-sm tb-since"><span class="muted">Connected since</span><span id="tbSince">--:--:--</span></span>
+      <span class="vsep tb-hide-sm"></span>
+      <span class="tb-group tb-hide-sm"><span class="muted">RTT</span><span id="tbRtt">— ms</span></span>
+      <span class="spacer"></span>
+      <button class="btn primary" id="connectBtn">Connect</button>
+      <span class="vsep"></span>
+      <span class="tb-group">
+        <svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M2 8.8a15 15 0 0 1 20 0M5 12.6a10 10 0 0 1 14 0M8.5 16.3a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></svg>
+        <span class="muted small tb-hide-sm">Link</span>
+        <span class="signal" id="tbSignal"><i></i><i></i><i></i><i></i></span>
+      </span>
+      <span class="vsep tb-hide-sm"></span>
+      <span class="tb-group tb-hide-sm tb-date"><span id="tbDate"></span><span id="tbTime"></span></span>
+    </header>
+
+    <main class="grid">
+
+      <!-- Vision -->
+      <section class="panel p-vision" aria-label="Vision">
+        <div class="panel-head">
+          <svg class="i" viewBox="0 0 24 24"><path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          <span class="panel-title">Vision</span>
+          <span class="spacer"></span>
+          <select class="tag cam-select" id="camSelect" aria-label="Camera"></select>
+          <span class="stat-inline"><span class="dot" id="fpsDot"></span>FPS <b id="fpsVal">—</b></span>
+          <button class="icon-btn" id="hudBtn" title="Toggle HUD">
+            <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+          </button>
+          <button class="icon-btn" id="fullBtn" title="Fullscreen">
+            <svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class="viewport" id="videoVp">
+            <video id="video" autoplay playsinline muted></video>
+            <div class="vp-empty" id="videoEmpty">
+              <svg class="i" viewBox="0 0 24 24"><path d="M15 10l5-3v10l-5-3M3 6h12v12H3z"/><path d="M2 2l20 20"/></svg>
+              <div>No video stream</div>
+              <div class="small">Connect to the robot to start the feed</div>
+            </div>
+            <div class="hud" id="hud">
+              <div class="crosshair"></div>
+              <div class="hud-chip tl"><span class="rec"></span><span>LIVE</span></div>
+              <div class="hud-chip tr" id="hudVel">0.00 m/s · 0.00 rad/s</div>
+              <div class="hud-chip bl" id="hudLabel">cam_front · —</div>
+              <div class="hud-chip br" id="hudLatency">— ms</div>
+              <div class="hud-estop">EMERGENCY STOP</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Second camera (shown in the Controls view when the robot has 2+ cameras) -->
+      <section class="panel p-vision2" aria-label="Second camera">
+        <div class="panel-head">
+          <svg class="i" viewBox="0 0 24 24"><path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          <span class="panel-title">Camera 2</span>
+          <span class="spacer"></span>
+          <select class="tag cam-select" id="cam2Select" aria-label="Second camera"></select>
+        </div>
+        <div class="panel-body">
+          <div class="viewport">
+            <video id="video2" autoplay playsinline muted></video>
+            <div class="vp-empty" id="video2Empty">
+              <svg class="i" viewBox="0 0 24 24"><path d="M15 10l5-3v10l-5-3M3 6h12v12H3z"/><path d="M2 2l20 20"/></svg>
+              <div>No video stream</div>
+            </div>
+            <div class="hud" id="hud2">
+              <div class="hud-chip tl"><span class="rec"></span><span>LIVE</span></div>
+              <div class="hud-chip bl" id="hud2Label">—</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Lidar -->
+      <section class="panel p-lidar" aria-label="Lidar">
+        <div class="panel-head">
+          <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M8 8a5.6 5.6 0 0 0 0 8M16 8a5.6 5.6 0 0 1 0 8M5 5a9.9 9.9 0 0 0 0 14M19 5a9.9 9.9 0 0 1 0 14"/></svg>
+          <span class="panel-title">Lidar <span class="muted lidar-sub" style="text-transform:none;letter-spacing:0">(3D point cloud)</span></span>
+          <span class="spacer"></span>
+          <span class="stat-inline"><span class="dot" id="lidarDot"></span><span id="lidarState">Idle</span></span>
+          <span class="stat-inline"><b id="lidarHz">—</b> Hz</span>
+          <button class="icon-btn" id="lidarReset" title="Reset view">
+            <svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class="viewport" id="lidarVp">
+            <canvas id="lidarCanvas"></canvas>
+            <div class="colorbar">
+              <div class="cb-title">Z (m)</div>
+              <div class="cb-ramp"></div>
+              <div class="cb-labels"><span>3.0</span><span>2.0</span><span>1.0</span><span>0.0</span></div>
+            </div>
+            <div class="vp-hint">drag to orbit · scroll to zoom · double-click to reset · <span id="lidarPts">0</span> pts</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Controls -->
+      <section class="panel p-controls" aria-label="Controls">
+        <div class="panel-head">
+          <svg class="i" viewBox="0 0 24 24"><path d="M7 7h10a5 5 0 0 1 4.9 6l-.8 4a2.6 2.6 0 0 1-4.6 1.1L15 16H9l-1.5 2.1A2.6 2.6 0 0 1 2.9 17l-.8-4A5 5 0 0 1 7 7z"/><path d="M8 10v4M6 12h4M15 11h.01M17 13h.01"/></svg>
+          <span class="panel-title">Controls</span>
+          <span class="spacer"></span>
+          <label class="switch" title="Commands are only sent while armed">
+            <input type="checkbox" id="armToggle" disabled>
+            <span class="track"></span>
+            <span id="armLabel">Disarmed</span>
+          </label>
+        </div>
+        <div class="panel-body">
+          <button class="estop" id="estopBtn">
+            <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5h.01"/></svg>
+            <span id="estopLabel">Emergency Stop</span>
+          </button>
+
+          <div class="ctl-sec ctl-drive">
+            <div class="pad disabled" id="pad">
+              <button class="pad-dir" data-dir="fwd" aria-label="Forward"><svg viewBox="0 0 16 16"><path d="M8 3l5 8H3z"/></svg></button>
+              <button class="pad-dir" data-dir="back" aria-label="Backward"><svg viewBox="0 0 16 16"><path d="M8 13 3 5h10z"/></svg></button>
+              <button class="pad-dir" data-dir="left" aria-label="Turn left"><svg viewBox="0 0 16 16"><path d="M3 8l8-5v10z"/></svg></button>
+              <button class="pad-dir" data-dir="right" aria-label="Turn right"><svg viewBox="0 0 16 16"><path d="M13 8 5 13V3z"/></svg></button>
+              <div class="knob" id="knob" title="Drag to drive"></div>
+            </div>
+            <div class="strafe">
+              <button class="btn" data-dir="strafeL" title="Strafe left (Q)">⇤ Strafe</button>
+              <button class="btn" data-dir="strafeR" title="Strafe right (E)">Strafe ⇥</button>
+            </div>
+          </div>
+
+          <div class="ctl-sec ctl-limits">
+            <div class="section-label">Limits</div>
+            <div class="slider-row">
+              <div class="label"><span>Max speed</span><b id="speedVal">0.5 m/s</b></div>
+              <input type="range" id="speed" min="0" max="1.5" step="0.05" value="0.5" aria-label="Maximum speed">
+              <div class="range-ends"><span>0.0</span><span>1.5</span></div>
+            </div>
+            <div class="slider-row">
+              <div class="label"><span>Body height</span><b id="heightVal">+0.00 m</b></div>
+              <input type="range" id="height" min="-0.10" max="0.05" step="0.01" value="0" aria-label="Body height offset">
+              <div class="range-ends"><span>−0.10</span><span>+0.05</span></div>
+            </div>
+          </div>
+
+          <div class="ctl-sec">
+            <div class="section-label">Posture</div>
+            <div class="seg" id="modeSeg">
+              <button data-mode="stand_up">Stand</button>
+              <button data-mode="lie_down">Lie down</button>
+              <button data-mode="balance">Balance</button>
+              <button data-mode="recovery">Recover</button>
+            </div>
+          </div>
+
+          <div class="ctl-sec ctl-readout">
+            <div class="kv"><span>Drive mode</span><span id="driveMode">—</span></div>
+            <div class="kv"><span>Command</span><span id="cmdText">Stop</span></div>
+            <div class="kv kv-vel"><span>Velocity</span><span id="velText">vx 0.00 · vy 0.00 · wz 0.00</span></div>
+            <div class="kbd-hint">
+              <kbd>W</kbd><kbd>S</kbd> fwd/back · <kbd>A</kbd><kbd>D</kbd> turn · <kbd>Q</kbd><kbd>E</kbd> strafe ·
+              <kbd>Space</kbd> stop · <kbd>Esc</kbd> e-stop
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Logs -->
+      <section class="panel p-logs" aria-label="System logs">
+        <div class="panel-head">
+          <svg class="i" viewBox="0 0 24 24"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6M9 9h2"/></svg>
+          <span class="panel-title">System Logs</span>
+          <span class="spacer"></span>
+          <div class="chips" id="logFilters">
+            <button class="chip active" data-level="all">All</button>
+            <button class="chip" data-level="info">Info</button>
+            <button class="chip" data-level="warn">Warn</button>
+            <button class="chip" data-level="error">Error</button>
+          </div>
+          <button class="btn" id="logClear">Clear</button>
+        </div>
+        <div class="panel-body">
+          <ul class="log-list" id="logList"></ul>
+        </div>
+      </section>
+
+      <!-- Status -->
+      <section class="panel p-status" aria-label="Robot status">
+        <div class="panel-head">
+          <svg class="i" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+          <span class="panel-title">Robot Status</span>
+        </div>
+        <div class="panel-body">
+          <div class="tiles">
+            <div class="tile">
+              <div class="tile-head"><svg class="i" viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M10 2h4M10 12l2-3v6l2-3"/></svg>Battery</div>
+              <div class="tile-value" id="batVal">—</div>
+              <div class="bar" id="batBar"><i></i></div>
+              <div class="tile-sub" id="batSub">— V</div>
+            </div>
+            <div class="tile">
+              <div class="tile-head"><svg class="i" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></svg>CPU Usage</div>
+              <div class="tile-value" id="cpuVal">—</div>
+              <div class="bar" id="cpuBar"><i></i></div>
+              <div class="tile-sub" id="cpuSub">—</div>
+            </div>
+            <div class="tile">
+              <div class="tile-head"><svg class="i" viewBox="0 0 24 24"><path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0z"/></svg>Motor Temp</div>
+              <div class="tile-value" id="tempVal">—</div>
+              <div class="bar" id="tempBar"><i></i></div>
+              <div class="tile-sub" id="tempSub">—</div>
+            </div>
+            <div class="tile">
+              <div class="tile-head"><svg class="i" viewBox="0 0 24 24"><path d="M2 8.8a15 15 0 0 1 20 0M5 12.6a10 10 0 0 1 14 0M8.5 16.3a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></svg>Network</div>
+              <div class="mini-kv">
+                <div><span>RTT</span><span id="netRtt">—</span></div>
+                <div><span>Signal</span><span id="netRssi">—</span></div>
+                <div><span>Video</span><span id="netBitrate">—</span></div>
+              </div>
+            </div>
+            <div class="tile">
+              <div class="tile-head"><svg class="i" viewBox="0 0 24 24"><path d="M5 20l2-7 4-3M19 20l-2-7-4-3M8 4h8v6H8z"/></svg>Foot Contact</div>
+              <div class="legs" id="legs">
+                <div data-leg="FL"><span class="dot"></span><b>FL</b><span class="muted">—</span></div>
+                <div data-leg="FR"><span class="dot"></span><b>FR</b><span class="muted">—</span></div>
+                <div data-leg="RL"><span class="dot"></span><b>RL</b><span class="muted">—</span></div>
+                <div data-leg="RR"><span class="dot"></span><b>RR</b><span class="muted">—</span></div>
+              </div>
+            </div>
+            <div class="tile">
+              <div class="tile-head"><svg class="i" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Connection</div>
+              <div class="mini-kv">
+                <div><span>Link</span><span id="connTransport">—</span></div>
+                <div><span>State</span><span id="connState">—</span></div>
+                <div><span>Ctrl</span><span id="connCtrl">—</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

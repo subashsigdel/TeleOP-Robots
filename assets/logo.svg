@@ -1,0 +1,7 @@
+<!-- PLACEHOLDER — replace this file with the real A Square Farm logo (same name, or update the <img> src in index.html). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#5b8880"/>
+  <path d="M14 47 26 15h4l12 32h-6l-3-8.5H20.5L17.5 47zm8.3-13.5h8.9L26.8 21z" fill="#fff"/>
+  <text x="44" y="27" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="15" font-weight="600" fill="#fff">2</text>
+  <path d="M41 50c0-7 5-11 12-11 0 7-5 11-12 11zm0 0 6-6" fill="#cfe3c4" stroke="#cfe3c4" stroke-width="1.2" stroke-linecap="round"/>
+</svg>
